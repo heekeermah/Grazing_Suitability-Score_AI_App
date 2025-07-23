@@ -3,22 +3,25 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 import os
 import traceback
-import pyttsx3
+from gtts import gTTS
+import tempfile
 
 # ========== TTS Module ==========
-def speak_text(text):
-    engine = pyttsx3.init()
-    engine.say(text)
-    engine.runAndWait()
+def play_voice(score, language):
+    recommendation = get_recommendation(score, language)
+    tts = gTTS(text=recommendation, lang='ha' if language == 'Hausa' else 'en')
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as tmpfile:
+        tts.save(tmpfile.name)
+        st.sidebar.audio(tmpfile.name)
 
 # ========== AI Recommendation Helper ==========
 def get_recommendation(score, language):
     if score < 0.3:
-        return "This land is not suitable for grazing." if language == "English" else "Wannan filin bai dace da kiwo ba."
+        return "This plot is not suitable for grazing. Water is limited and vegetation is poor." if language == "English" else "Wannan fili bai dace da kiwo ba. Babu ruwan sha sosai, kuma ganyen ciyawa ya ragu."
     elif score < 0.5:
-        return "This land is moderately suitable." if language == "English" else "Wannan filin na da matsakaicin dacewa."
+        return "This plot can be grazed cautiously. Monitor livestock load." if language == "English" else "Za a iya kiwo a hankali a wannan fili. Amma a kula da yawancin shanu da za a kai."
     else:
-        return "This land is good for grazing." if language == "English" else "Wannan filin ya dace sosai da kiwo."
+        return "This is a very suitable plot for grazing. Water and forage are sufficient." if language == "English" else "Wannan fili yana da kyau sosai don kiwo. Ruwan sha da ciyawa sun isa."
 
 # ========== GSS Calculation ==========
 def calculate_gss(df, weights=None):
@@ -143,7 +146,7 @@ def main():
         st.sidebar.markdown(f"**AI Suggestion:** {recommendation}")
 
         if st.sidebar.button("🔊 Play Voice"):
-            speak_text(recommendation)
+            play_voice(score, language)
 
         st.subheader("📈 Grazing Suitability Score Distribution")
         st.bar_chart(result['GSS'])
