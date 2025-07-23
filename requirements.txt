@@ -1,5 +1,5 @@
 streamlit
 scikit_learn
-openai
+pyttsx3
 pandas
 openpyxl
