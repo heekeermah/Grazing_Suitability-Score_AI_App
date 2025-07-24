@@ -195,13 +195,21 @@ def main():
 
         selected_row = result[result['Plot Name'] == selected_plot].iloc[0]
         score = selected_row['GSS']
-        recommendation = get_recommendation(score, language)
+        use_openai = st.sidebar.checkbox("Use OpenAI GPT for recommendation")
+
+        if use_openai:
+            recommendation = generate_openai_recommendation(selected_row, language)
+        else:
+            recommendation = get_recommendation(score, language)
 
         st.sidebar.markdown(f"**AI Suggestion:** {recommendation}")
 
         if st.sidebar.button("🔊 Play Voice"):
-            play_voice(score, language)
-
+            tts = gTTS(text=recommendation, lang='ha' if language == 'Hausa' else 'en')
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as tmpfile:
+                tts.save(tmpfile.name)
+                st.sidebar.audio(tmpfile.name)
+                
          # Optional Map
         gss_map = create_gss_map(result)
         if gss_map:
