@@ -23,6 +23,35 @@ def get_recommendation(score, language):
     else:
         return "This is a very suitable plot for grazing. Water and forage are sufficient." if language == "English" else "Wannan fili yana da kyau sosai don kiwo. Ruwan sha da ciyawa sun isa."
 
+# ========== OpenAI Recommendation ==========
+def generate_openai_recommendation(row, language="English"):
+    prompt = f"""
+    You are an expert in rangeland management and local extension services.
+    A grazing land has these features:
+    - Biomass: {row['available_biomass']}
+    - Shrub %: {row['Shrub %']}
+    - Grazing Pressure: {row['grazing_pressure']}
+    - Woody Plants: {row['total woody count']}
+    - GSS Score: {row['GSS']}
+    - Diagnosis: {row['Diagnosis']}
+
+    Give a short, practical recommendation for how to improve or manage this plot, in {language}.
+    """
+    try:
+        openai.api_key = st.secrets.get("OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful environmental AI assistant."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.7,
+            max_tokens=150
+        )
+        return response['choices'][0]['message']['content'].strip()
+    except Exception as e:
+        return f"⚠️ OpenAI error: This is a demo."
+
 # ========== GSS Calculation ==========
 def calculate_gss(df, weights=None):
     try:
@@ -76,6 +105,28 @@ def calculate_gss(df, weights=None):
         st.error("❌ Error during GSS calculation:")
         st.error(traceback.format_exc())
         return pd.DataFrame()
+
+
+# ========== Map Visualization ==========
+def create_gss_map(data):
+    if 'latitude' not in data.columns or 'longitude' not in data.columns:
+        return None
+
+    m = folium.Map(location=[data['latitude'].mean(), data['longitude'].mean()], zoom_start=6)
+    for _, row in data.iterrows():
+        color = 'red' if row['GSS'] < 0.3 else 'orange' if row['GSS'] < 0.5 else 'green'
+        popup_text = f"{row['Plot Name']} - GSS: {round(row['GSS'], 2)}"
+        folium.CircleMarker(
+            location=(row['latitude'], row['longitude']),
+            radius=6,
+            color=color,
+            fill=True,
+            fill_color=color,
+            fill_opacity=0.7,
+            popup=popup_text
+        ).add_to(m)
+
+    return m
 
 # ========== Streamlit App ==========
 def main():
@@ -147,6 +198,12 @@ def main():
 
         if st.sidebar.button("🔊 Play Voice"):
             play_voice(score, language)
+
+         # Optional Map
+        gss_map = create_gss_map(result)
+        if gss_map:
+            st.subheader("🗺️ Plot Locations with GSS")
+            st_folium(gss_map, width=700)
 
         st.subheader("📈 Grazing Suitability Score Distribution")
         st.bar_chart(result['GSS'])
