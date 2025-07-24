@@ -3,3 +3,5 @@ scikit_learn
 gTTS
 pandas
 openpyxl
+openai
+folium
