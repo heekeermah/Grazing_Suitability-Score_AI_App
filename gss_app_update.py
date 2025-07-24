@@ -5,6 +5,9 @@ import os
 import traceback
 from gtts import gTTS
 import tempfile
+import folium
+from streamlit_folium import st_folium
+import openai
 
 # ========== TTS Module ==========
 def play_voice(score, language):
