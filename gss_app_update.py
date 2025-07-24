@@ -134,7 +134,7 @@ def create_gss_map(data):
 # ========== Streamlit App ==========
 def main():
     st.set_page_config(page_title="Grazing Suitability Checker", layout="wide")
-    st.title("🌾 Grazing Suitability Score (GSS) Calculator with AI Suggestions")
+    st.title("🌾 Grazing Suitability Score (GSS) Calculator AI App")
     st.sidebar.header("Upload Your Data")
     uploaded_file = st.sidebar.file_uploader("Choose a CSV or Excel file", type=["csv", "xlsx"])
 
