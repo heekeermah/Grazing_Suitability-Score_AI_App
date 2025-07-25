@@ -14,5 +14,7 @@ For data analysts, the app displays the first rows, scaled values, full results 
 
 If your data contains latitude and longitude and longitude, the app plots it on a map.
 
+live demo: https://grazingsuitability-scoreaiapp-e2yckqhkc7a9k9xmx4ujod.streamlit.app/
+
 # Note
 There is an excel sheet that contain sample data gotten from kaggle, a namibian rangeland dataset that has been cleaned which can be used to test the app
